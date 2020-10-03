@@ -1,2 +1,2 @@
-# rsa_algorithm
- An app that encrypts message using RSA Algorithm
+# RSA Algorithm
+ An app that encrypts and decrypts message using RSA Algorithm.
