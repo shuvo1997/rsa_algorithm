@@ -19,23 +19,27 @@ class _MyAppState extends State<MyApp> {
   final _formKeyEncrypt = GlobalKey<FormState>();
   final _formKeyDecrypt = GlobalKey<FormState>();
   int n = 0;
-  int p;
-  int q;
-  int r;
+  int p = 0;
+  int q = 0;
+  int r = 0;
   int e = 0;
   int d = 0;
   String normalmsg = '';
   String encryptedmsg = '';
   String inputencryptedmsg = '';
   String output = '';
-  int appendval;
-  int dropDownValue = 0;
-  String checkmsg;
+
+  int appendval =
+      0; // To append ascii values to be greater than 32(risky approach)
+  bool flag = false; // To control append value whether to use it or not
+
+  String checkmsg = '';
 
   double opacityStep1 = 0.0;
   double opacityStep2 = 0.0;
   double opacityStep3 = 0.0;
   double opacityStep4 = 0.0;
+  double opacityStep5 = 0.0;
 
   List<Text> numbers = [];
   List<int> num = [];
@@ -114,11 +118,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   String numbersToText(List<int> numbers) {
+    appendval = 0;
     String s = '';
     List<int> sortedNumbers = numbers.toList();
     sortedNumbers.sort();
     int lowestValue = sortedNumbers[0];
     if (lowestValue < 33) {
+      flag = true;
       int appendValue = 33 - lowestValue;
       appendval = appendValue;
       for (int i = 0; i < numbers.length; i++) {
@@ -136,7 +142,9 @@ class _MyAppState extends State<MyApp> {
     List<int> numbers = [];
     for (int i = 0; i < s.length; i++) {
       int val = s.codeUnitAt(i);
-      val = val - appendval;
+      if (flag) {
+        val = val - appendval;
+      }
       //print(val);
       int num = bigmod(val, 103, 143);
       numbers.add(num);
@@ -162,9 +170,14 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        backgroundColor: Colors.purple[100],
         appBar: AppBar(
-          title: Center(child: Text('RSA Algorithm')),
-          backgroundColor: Colors.blueAccent,
+          title: Center(
+              child: Text(
+            'RSA Algorithm',
+            style: TextStyle(letterSpacing: 2.0),
+          )),
+          backgroundColor: Colors.purple,
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -173,14 +186,15 @@ class _MyAppState extends State<MyApp> {
               child: Column(
                 children: [
                   Container(
-                    color: Colors.blueAccent,
+                    color: Colors.purple[400],
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                     child: Text(
                       'Step 1: Compute N as the product of P and Q',
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                          color: Colors.white,
+                          letterSpacing: 2.0),
                     ),
                   ),
                   SizedBox(
@@ -235,8 +249,14 @@ class _MyAppState extends State<MyApp> {
                             height: 15,
                           ),
                           FlatButton(
-                            child: Text('Calculate'),
-                            color: Colors.blueAccent,
+                            child: Text(
+                              'Calculate',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  letterSpacing: 2.0),
+                            ),
+                            color: Colors.purple,
                             onPressed: () {
                               if (_formKeyPrime.currentState.validate()) {
                                 setState(() {
@@ -278,10 +298,10 @@ class _MyAppState extends State<MyApp> {
                       child: ExpansionTile(
                           title: Text(
                             'Choose a number from below',
-                            style:
-                                TextStyle(fontSize: 20, color: Colors.purple),
+                            style: TextStyle(
+                                fontSize: 20, color: Colors.purple[600]),
                           ),
-                          backgroundColor: Colors.purple[100],
+                          backgroundColor: Colors.purple[200],
                           children: [
                             Container(
                               padding: EdgeInsets.symmetric(
@@ -296,14 +316,15 @@ class _MyAppState extends State<MyApp> {
                     ),
                   ),
                   Container(
-                    color: Colors.blueAccent,
+                    color: Colors.purple[400],
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                     child: Text(
                       'Step 2: Find two numbers e and d that are relatively prime to N and for which e*d = 1 mod r:',
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                          color: Colors.white,
+                          letterSpacing: 2.0),
                     ),
                   ),
                   Form(
@@ -333,8 +354,14 @@ class _MyAppState extends State<MyApp> {
                             height: 10,
                           ),
                           FlatButton(
-                            child: Text('Calculate D'),
-                            color: Colors.blueAccent,
+                            child: Text(
+                              'Calculate D',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  letterSpacing: 2.0),
+                            ),
+                            color: Colors.purple,
                             onPressed: () {
                               if (_formKeyD.currentState.validate()) {
                                 setState(() {
@@ -363,6 +390,55 @@ class _MyAppState extends State<MyApp> {
                         SizedBox(
                           height: 20,
                         ),
+                      ],
+                    ),
+                  ),
+                  FlatButton(
+                      color: Colors.purple,
+                      onPressed: () {
+                        if (gcd(e, r) == 1 && gcd(d, r) == 1) {
+                          checkmsg = 'e and \u03A6(n) are relatively prime\n' +
+                              'd and \u03A6(n) are relatively prime';
+                        } else if (gcd(e, r) == 1) {
+                          checkmsg = 'e and \u03A6(n) are relatively prime\n' +
+                              'd and \u03A6(n) are not relatively prime';
+                        } else if (gcd(d, r) == 1) {
+                          checkmsg =
+                              'e and \u03A6(n) are not relatively prime\n' +
+                                  'd and \u03A6(n) are relatively prime';
+                        } else {
+                          checkmsg =
+                              'e and \u03A6(n) are not relatively prime\n' +
+                                  'd and \u03A6(n) are not relatively prime';
+                        }
+                        setState(() {
+                          opacityStep5 = 1.0;
+                        });
+                      },
+                      child: Text(
+                        'Check e & d',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            letterSpacing: 2.0),
+                      )),
+                  SizedBox(height: 15),
+                  AnimatedOpacity(
+                    opacity: opacityStep5,
+                    duration: Duration(seconds: 1),
+                    child: Text(
+                      checkmsg,
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  AnimatedOpacity(
+                    opacity: opacityStep5,
+                    duration: Duration(seconds: 2),
+                    child: Column(
+                      children: [
                         Text(
                           'So, the public key is (' +
                               e.toString() +
@@ -384,29 +460,19 @@ class _MyAppState extends State<MyApp> {
                       ],
                     ),
                   ),
-                  FlatButton(
-                      color: Colors.blueAccent,
-                      onPressed: () {
-                        if (gcd(e, n) == 1 && gcd(d, n) == 1) {
-                          checkmsg = 'e and \u03A6(n) is relatively prime';
-                        }
-                      },
-                      child: Text(
-                        'Check e & d',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                      )),
                   SizedBox(
                     height: 20,
                   ),
                   Container(
-                    color: Colors.blueAccent,
+                    color: Colors.purple[400],
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                     child: Text(
                       'Step 3: Use e and d to encode and decode messages',
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                          color: Colors.white,
+                          letterSpacing: 2.0),
                     ),
                   ),
                   Form(
@@ -421,6 +487,7 @@ class _MyAppState extends State<MyApp> {
                           validator: (val) =>
                               val.isEmpty ? 'Enter a message' : null,
                           onChanged: (val) {
+                            normalmsg = '';
                             normalmsg = val;
                           },
                         ),
@@ -428,11 +495,16 @@ class _MyAppState extends State<MyApp> {
                           height: 10,
                         ),
                         FlatButton(
-                          child: Text('Encrypt Message'),
-                          color: Colors.blueAccent,
+                          child: Text(
+                            'Encrypt Message',
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                          color: Colors.purple,
                           onPressed: () {
                             if (_formKeyEncrypt.currentState.validate()) {
                               setState(() {
+                                encryptedNumbers = [];
+                                encryptedmsg = '';
                                 encryptedNumbers = textToNumbers(normalmsg);
                                 encryptedmsg = numbersToText(encryptedNumbers);
                                 opacityStep3 = 1.0;
@@ -477,6 +549,7 @@ class _MyAppState extends State<MyApp> {
                           validator: (val) =>
                               val.isEmpty ? 'Enter a message' : null,
                           onChanged: (val) {
+                            inputencryptedmsg = '';
                             inputencryptedmsg = val;
                           },
                         ),
@@ -484,11 +557,16 @@ class _MyAppState extends State<MyApp> {
                           height: 15,
                         ),
                         FlatButton(
-                          child: Text('Decrypt Message'),
-                          color: Colors.blueAccent,
+                          child: Text(
+                            'Decrypt Message',
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                          color: Colors.purple,
                           onPressed: () {
                             if (_formKeyDecrypt.currentState.validate()) {
                               setState(() {
+                                encryptedNumbers = [];
+                                output = '';
                                 encryptedNumbers =
                                     textToNumbersDecryption(inputencryptedmsg);
                                 output =
@@ -521,7 +599,7 @@ class _MyAppState extends State<MyApp> {
                     ),
                   ),
                   SizedBox(
-                    height: 15,
+                    height: 50,
                   ),
                 ],
               ),
